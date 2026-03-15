@@ -22,8 +22,13 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Use DATABASE_URL from settings (async URL for async migrations)
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Use DATABASE_URL from settings, ensure asyncpg driver for async migrations
+database_url = settings.DATABASE_URL
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+config.set_main_option("sqlalchemy.url", database_url)
 target_metadata = Base.metadata
 
 
@@ -50,7 +55,7 @@ async def run_async_migrations() -> None:
     """Run migrations in 'online' mode with async engine."""
     section = config.get_section(config.config_ini_section)
     configuration = dict(section) if section else {}
-    configuration["sqlalchemy.url"] = settings.DATABASE_URL
+    configuration["sqlalchemy.url"] = database_url
     connectable = async_engine_from_config(
         configuration,
         prefix="sqlalchemy.",
