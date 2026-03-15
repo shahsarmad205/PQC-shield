@@ -159,6 +159,7 @@ export default function AuditTable() {
     []
   );
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: data?.items ?? [],
     columns,

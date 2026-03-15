@@ -52,10 +52,12 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [fetchedUser, setFetchedUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(() =>
     localStorage.getItem(TOKEN_KEY)
   );
+
+  const user = token ? fetchedUser : null;
 
   const fetchMe = useCallback(async (authToken: string) => {
     const { data } = await api.get<{
@@ -66,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }>('/api/v1/auth/me', {
       headers: { Authorization: `Bearer ${authToken}` },
     });
-    setUser({
+    setFetchedUser({
       id: data.id,
       email: data.email,
       full_name: data.full_name,
@@ -77,15 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearAuth = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
-    setUser(null);
+    setFetchedUser(null);
   }, []);
 
   // On load: validate stored token with GET /me; clear if expired or within 5 min of expiry
   useEffect(() => {
-    if (!token) {
-      setUser(null);
-      return;
-    }
+    if (!token) return;
     if (isTokenExpiredOrExpiringSoon(token, EXPIRY_BUFFER_MINUTES)) {
       clearAuth();
       return;

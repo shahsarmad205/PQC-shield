@@ -26,4 +26,10 @@ export default defineConfig([
       ],
     },
   },
+  {
+    files: ['**/ui/*.tsx', '**/lib/auth.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
