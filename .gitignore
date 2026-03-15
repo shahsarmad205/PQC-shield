@@ -24,3 +24,5 @@ frontend/dist/
 # Secrets
 *.pem
 *.key
+backend/.env
+backend/.env.example
