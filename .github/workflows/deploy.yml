@@ -1,0 +1,48 @@
+name: CI
+on:
+  push:
+    branches: [main]
+jobs:
+  backend:
+    name: Backend (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+      - name: Run pytest
+        run: |
+          cd backend
+          pytest tests/ -v
+
+  frontend:
+    name: Frontend (tsc + eslint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: TypeScript check
+        run: |
+          cd frontend
+          npx tsc --noEmit
+      - name: ESLint
+        run: |
+          cd frontend
+          npx eslint .
