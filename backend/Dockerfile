@@ -13,10 +13,11 @@ RUN git clone --branch 0.15.0 https://github.com/open-quantum-safe/liboqs.git /t
     && rm -rf /tmp/liboqs
 
 WORKDIR /app
-COPY requirements.txt .
+
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY backend/ .
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
