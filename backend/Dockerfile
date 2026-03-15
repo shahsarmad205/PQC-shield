@@ -1,26 +1,23 @@
-# PQC Shield Backend — production
-# python:3.12-slim, liboqs build deps, non-root user, uvicorn --workers 4
 FROM python:3.12-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    ninja-build \
-    libssl-dev \
+RUN apt-get update && apt-get install -y \
+    cmake ninja-build libssl-dev git build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+RUN git clone --branch 0.15.0 https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs \
+    && cmake -S /tmp/liboqs -B /tmp/liboqs/build -GNinja \
+       -DBUILD_SHARED_LIBS=ON -DOQS_BUILD_ONLY_LIB=ON \
+    && cmake --build /tmp/liboqs/build \
+    && cmake --install /tmp/liboqs/build \
+    && ldconfig \
+    && rm -rf /tmp/liboqs
 
+WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app ./app
+COPY . .
 
-RUN groupadd --gid 1000 app && \
-    useradd --uid 1000 --gid app --shell /bin/false --create-home app && \
-    chown -R app:app /app
-USER app
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
-EXPOSE 8000
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
