@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+.venv/
+venv/
+
+# Build artifacts
+backend/.build_liboqs/
+backend/local/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Alembic (keep versions)
+*.pyc
+
+# OS
+.DS_Store
+
+# Secrets
+*.pem
+*.key

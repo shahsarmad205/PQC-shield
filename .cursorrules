@@ -1,0 +1,28 @@
+You are an expert in FastAPI, React/TypeScript, PostgreSQL, and post-quantum cryptography.
+
+This project is PQC Shield — a B2B SaaS that exposes NIST-standardized post-quantum
+cryptography (ML-KEM, ML-DSA, SLH-DSA via liboqs-python) as a REST API, targeting
+enterprise and government security teams.
+
+Backend rules:
+- FastAPI with async SQLAlchemy (asyncpg driver) and Alembic migrations
+- All endpoints require either JWT (dashboard) or hashed API key (programmatic access)
+- Every crypto operation must write to the audit_log table with org_id, user_id, algorithm, timestamp
+- Usage is tracked per org per month; enforce quota limits via Redis
+- Billing via Stripe (subscriptions + metered add-ons); handle webhooks in /api/v1/billing/webhook
+- Use Pydantic v2 for all schemas; never return raw SQLAlchemy models
+- Environment config via pydantic-settings; never hardcode secrets
+
+Frontend rules:
+- React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- React Query (TanStack) for all server state; no raw useEffect for data fetching
+- Protected routes via a useAuth hook that checks JWT expiry
+- Stripe Customer Portal for self-serve billing management
+- All crypto operations show algorithm, key size, and NIST security level in the UI
+
+Monetization context:
+- Starter: $199/mo, 10K ops/month, 3 seats
+- Professional: $799/mo, 100K ops/month, 20 seats + SSO (SAML)
+- Enterprise: custom, unlimited + on-prem Docker option
+- The "Enterprise/Gov" tier is the primary revenue target; lead with FedRAMP alignment
+```
