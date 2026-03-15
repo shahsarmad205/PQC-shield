@@ -86,10 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!token) return;
     if (isTokenExpiredOrExpiringSoon(token, EXPIRY_BUFFER_MINUTES)) {
-      clearAuth();
+      setTimeout(() => clearAuth(), 0);
       return;
     }
-    fetchMe(token).catch(clearAuth);
+    fetchMe(token).catch(() => setTimeout(() => clearAuth(), 0));
   }, [token, fetchMe, clearAuth]);
 
   const login = useCallback(
