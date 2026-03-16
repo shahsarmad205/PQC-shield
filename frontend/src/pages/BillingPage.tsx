@@ -1,9 +1,9 @@
-import { CheckIcon } from 'lucide-react';
+import { CheckIcon, CreditCard, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { AppLayout } from '@/components/app-layout';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 type BillingUsage = {
@@ -20,6 +20,7 @@ const PLANS = [
     period: '/month',
     description: 'For small teams and experiments',
     features: ['10,000 ops/month', 'KEM & DSA APIs', 'API keys', 'Compliance report'],
+    popular: false,
   },
   {
     id: 'pro',
@@ -28,6 +29,7 @@ const PLANS = [
     period: '/month',
     description: 'For growing teams',
     features: ['100,000 ops/month', 'Everything in Starter', 'Priority support', 'SLA 99.9%'],
+    popular: true,
   },
   {
     id: 'enterprise',
@@ -36,11 +38,12 @@ const PLANS = [
     period: '',
     description: 'For large organizations',
     features: ['1,000,000+ ops/month', 'Everything in Pro', 'Dedicated support', 'Custom SLA'],
+    popular: false,
   },
 ] as const;
 
 export default function BillingPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [usage, setUsage] = useState<BillingUsage | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
@@ -110,71 +113,59 @@ export default function BillingPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading…</p>
-      </div>
+      <AppLayout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="text-xl font-semibold hover:opacity-90">
-              PQC Shield
-            </Link>
-            <Link to="/compliance" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Compliance
-            </Link>
-            <Link to="/api-keys" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              API Keys
-            </Link>
-            <Link to="/cbom" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              CBOM
-            </Link>
-            <Link to="/billing" className="text-sm font-medium text-foreground">
-              Billing
-            </Link>
+    <AppLayout title="Billing">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <CreditCard className="h-6 w-6 text-primary" />
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={logout}>
-              Sign out
-            </Button>
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Billing</h1>
+            <p className="text-muted-foreground">Manage your plan and usage</p>
           </div>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="mb-2 text-2xl font-semibold">Billing</h1>
-        <p className="mb-8 text-muted-foreground">
-          Manage your plan and usage.
-        </p>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
         )}
 
         {/* Current plan & usage */}
-        <Card className="mb-8">
+        <Card>
           <CardHeader>
-            <CardTitle>Current plan</CardTitle>
+            <CardTitle className="text-lg">Current Plan</CardTitle>
             <p className="text-sm text-muted-foreground">
               Usage resets each billing period.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
-              <p className="text-muted-foreground">Loading…</p>
+              <div className="flex items-center justify-center py-4">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <span>Loading...</span>
+                </div>
+              </div>
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-lg font-medium capitalize">
+                  <Badge variant="secondary" className="text-base font-medium capitalize px-3 py-1">
                     {usage?.plan ?? 'Starter'}
-                  </span>
+                  </Badge>
                   <Button
                     type="button"
                     variant="outline"
@@ -182,18 +173,18 @@ export default function BillingPage() {
                     onClick={handleManageBilling}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? 'Opening…' : 'Manage billing'}
+                    {portalLoading ? 'Opening...' : 'Manage billing'}
                   </Button>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Ops this month</span>
-                    <span>
+                    <span className="text-muted-foreground">Operations this month</span>
+                    <span className="font-medium text-foreground">
                       {(usage?.ops_used_this_month ?? 0).toLocaleString()} / {(usage?.monthly_quota ?? 0).toLocaleString()}
                     </span>
                   </div>
                   <div
-                    className="h-2 w-full overflow-hidden rounded-full bg-muted"
+                    className="h-2.5 w-full overflow-hidden rounded-full bg-muted"
                     role="progressbar"
                     aria-valuenow={progressPercent}
                     aria-valuemin={0}
@@ -201,8 +192,8 @@ export default function BillingPage() {
                   >
                     <div
                       className={cn(
-                        'h-full rounded-full transition-all',
-                        progressPercent >= 100 ? 'bg-destructive' : 'bg-primary'
+                        'h-full rounded-full transition-all duration-500',
+                        progressPercent >= 90 ? 'bg-destructive' : progressPercent >= 70 ? 'bg-warning' : 'bg-primary'
                       )}
                       style={{ width: `${progressPercent}%` }}
                     />
@@ -214,60 +205,74 @@ export default function BillingPage() {
         </Card>
 
         {/* Plan cards */}
-        <div className="grid gap-6 sm:grid-cols-3">
-          {PLANS.map((plan) => {
-            const isCurrent = currentPlanId === plan.id;
-            return (
-              <Card
-                key={plan.id}
-                className={cn(
-                  'flex flex-col',
-                  isCurrent && 'ring-2 ring-primary'
-                )}
-              >
-                <CardHeader>
-                  {isCurrent && (
-                    <span className="mb-1 inline-block w-fit rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary">
-                      Current plan
-                    </span>
+        <div>
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Available Plans</h2>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {PLANS.map((plan) => {
+              const isCurrent = currentPlanId === plan.id;
+              return (
+                <Card
+                  key={plan.id}
+                  className={cn(
+                    'relative flex flex-col overflow-hidden transition-shadow hover:shadow-lg',
+                    isCurrent && 'ring-2 ring-primary',
+                    plan.popular && !isCurrent && 'ring-1 ring-primary/50'
                   )}
-                  <CardTitle className="text-lg">{plan.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{plan.description}</p>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {plan.price}
-                    <span className="text-sm font-normal text-muted-foreground">{plan.period}</span>
-                  </p>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col gap-4">
-                  <ul className="space-y-2 text-sm">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2">
-                        <CheckIcon className="size-4 shrink-0 text-primary" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-auto pt-4">
-                    <Button
-                      type="button"
-                      variant={isCurrent ? 'outline' : 'default'}
-                      className="w-full"
-                      disabled={isCurrent || upgradingPlan !== null}
-                      onClick={() => handleUpgrade(plan.id)}
-                    >
-                      {isCurrent
-                        ? 'Current plan'
-                        : upgradingPlan === plan.id
-                          ? 'Redirecting…'
-                          : 'Upgrade'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                >
+                  {plan.popular && !isCurrent && (
+                    <div className="absolute right-4 top-4">
+                      <Badge className="gap-1 bg-primary text-primary-foreground">
+                        <Sparkles className="h-3 w-3" />
+                        Popular
+                      </Badge>
+                    </div>
+                  )}
+                  <CardHeader>
+                    {isCurrent && (
+                      <Badge variant="secondary" className="mb-2 w-fit">
+                        Current plan
+                      </Badge>
+                    )}
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{plan.description}</p>
+                    <p className="mt-3 text-3xl font-bold text-foreground">
+                      {plan.price}
+                      <span className="text-base font-normal text-muted-foreground">{plan.period}</span>
+                    </p>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col gap-4">
+                    <ul className="space-y-3 text-sm">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2">
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                            <CheckIcon className="h-3 w-3 text-primary" />
+                          </div>
+                          <span className="text-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-auto pt-4">
+                      <Button
+                        type="button"
+                        variant={isCurrent ? 'outline' : 'default'}
+                        className="w-full"
+                        disabled={isCurrent || upgradingPlan !== null}
+                        onClick={() => handleUpgrade(plan.id)}
+                      >
+                        {isCurrent
+                          ? 'Current plan'
+                          : upgradingPlan === plan.id
+                            ? 'Redirecting...'
+                            : 'Upgrade'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

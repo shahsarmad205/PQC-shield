@@ -1,67 +1,52 @@
-import { Link } from 'react-router-dom';
+import { ScrollText } from 'lucide-react';
+import { AppLayout } from '@/components/app-layout';
 import AuditTable from '@/components/AuditTable';
-import { Button } from '@/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 
 export default function AuditPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading…</p>
-      </div>
+      <AppLayout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="text-xl font-semibold hover:opacity-90">
-              PQC Shield
-            </Link>
-            <Link to="/compliance" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Compliance
-            </Link>
-            <Link to="/api-keys" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              API Keys
-            </Link>
-            <Link to="/billing" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Billing
-            </Link>
-            <Link to="/cbom" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              CBOM
-            </Link>
-            <Link to="/audit" className="text-sm font-medium text-foreground">
-              Audit
-            </Link>
+    <AppLayout title="Audit Log">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <ScrollText className="h-6 w-6 text-primary" />
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={logout}>
-              Sign out
-            </Button>
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Audit Log</h1>
+            <p className="text-muted-foreground">View and export API operation history for your organization</p>
           </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="mb-2 text-2xl font-semibold">Audit log</h1>
-        <p className="mb-6 text-muted-foreground">
-          View and export API operation history for your organization.
-        </p>
+        {/* Audit Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Audit entries</CardTitle>
+            <CardTitle className="text-lg">Audit Entries</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              All API operations are logged for compliance and security purposes.
+            </p>
           </CardHeader>
           <CardContent>
             <AuditTable />
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

@@ -1,8 +1,9 @@
-import { CopyIcon } from 'lucide-react';
+import { Activity, CopyIcon, TrendingUp, Zap } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { AppLayout } from '@/components/app-layout';
 import EncryptPanel from '@/components/EncryptPanel';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -66,8 +67,51 @@ function ResultBlock({
   );
 }
 
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  trendLabel,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  trend?: 'up' | 'down' | 'neutral';
+  trendLabel?: string;
+}) {
+  return (
+    <Card className="relative overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold text-foreground">
+          {typeof value === 'number' ? value.toLocaleString() : value}
+        </div>
+        {trendLabel && (
+          <p className={cn(
+            'mt-1 flex items-center gap-1 text-xs',
+            trend === 'up' && 'text-success',
+            trend === 'down' && 'text-destructive',
+            trend === 'neutral' && 'text-muted-foreground'
+          )}>
+            {trend === 'up' && <TrendingUp className="h-3 w-3" />}
+            {trendLabel}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [opsUsed] = useState(1234);
   const [opsRemaining] = useState(8766);
@@ -85,99 +129,81 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading…</p>
-      </div>
+      <AppLayout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-6">
-            <h1 className="text-xl font-semibold">PQC Shield</h1>
-            <Link to="/compliance" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Compliance
-            </Link>
-            <Link to="/api-keys" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              API Keys
-            </Link>
-            <Link to="/billing" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Billing
-            </Link>
-            <Link to="/audit" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Audit
-            </Link>
-            <Link to="/cbom" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              CBOM
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={logout}>
-              Sign out
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl px-4 py-8">
-        <h2 className="mb-2 text-2xl font-medium">
-          Welcome, {user.full_name}
-        </h2>
-        {user.organization && (
-          <p className="mb-8 text-muted-foreground">
-            {user.organization.name}
-          </p>
-        )}
-
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Ops used this month
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{opsUsed.toLocaleString()}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Ops remaining
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{opsRemaining.toLocaleString()}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Current plan
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{plan}</p>
-            </CardContent>
-          </Card>
+    <AppLayout title="Dashboard">
+      <div className="space-y-8">
+        {/* Welcome section */}
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-semibold text-foreground">
+            Welcome back, {user.full_name}
+          </h2>
+          {user.organization && (
+            <p className="text-muted-foreground">
+              {user.organization.name}
+            </p>
+          )}
         </div>
 
-        <Tabs defaultValue="kem" className="space-y-4">
-          <TabsList className="grid w-full max-w-sm grid-cols-2">
-            <TabsTrigger value="kem">Encrypt (KEM)</TabsTrigger>
-            <TabsTrigger value="dsa">Sign (DSA)</TabsTrigger>
+        {/* Stats grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard
+            title="Operations Used"
+            value={opsUsed}
+            icon={Activity}
+            trend="up"
+            trendLabel="+12% from last month"
+          />
+          <StatCard
+            title="Operations Remaining"
+            value={opsRemaining}
+            icon={Zap}
+            trend="neutral"
+            trendLabel="Resets in 16 days"
+          />
+          <StatCard
+            title="Current Plan"
+            value={plan}
+            icon={TrendingUp}
+            trendLabel="Upgrade for more operations"
+          />
+        </div>
+
+        {/* Crypto operations */}
+        <Tabs defaultValue="kem" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="kem" className="gap-2">
+              <span>Encrypt (KEM)</span>
+            </TabsTrigger>
+            <TabsTrigger value="dsa" className="gap-2">
+              <span>Sign (DSA)</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="kem" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Key encapsulation (KEM)</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Generate a keypair or encapsulate a secret with a recipient public key.
-                </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <Zap className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Key Encapsulation (KEM)</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Generate a keypair or encapsulate a secret with a recipient public key.
+                    </p>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <EncryptPanel />
@@ -188,14 +214,21 @@ export default function DashboardPage() {
           <TabsContent value="dsa" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Sign (DSA)</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Select algorithm, enter message, then sign.
-                </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+                    <Activity className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Digital Signatures (DSA)</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Select algorithm, enter message, then sign.
+                    </p>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Algorithm</label>
+                  <label className="text-sm font-medium text-foreground">Algorithm</label>
                   <Select
                     value={dsaAlg}
                     onValueChange={(v) => setDsaAlg(v ?? DSA_ALGORITHMS[0])}
@@ -206,14 +239,19 @@ export default function DashboardPage() {
                     <SelectContent>
                       {DSA_ALGORITHMS.map((alg) => (
                         <SelectItem key={alg} value={alg}>
-                          {alg}
+                          <span className="flex items-center gap-2">
+                            {alg}
+                            <Badge variant="secondary" className="text-[10px]">
+                              NIST
+                            </Badge>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Message</label>
+                  <label className="text-sm font-medium text-foreground">Message</label>
                   <Input
                     placeholder="Message to sign"
                     value={dsaMessage}
@@ -221,7 +259,9 @@ export default function DashboardPage() {
                     className="font-mono text-sm"
                   />
                 </div>
-                <Button onClick={handleDsaSubmit}>Sign</Button>
+                <Button onClick={handleDsaSubmit} className="gap-2">
+                  Sign Message
+                </Button>
                 <div className="rounded-lg border bg-muted/30 p-4">
                   <ResultBlock
                     label="Signature (base64)"
@@ -232,7 +272,7 @@ export default function DashboardPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

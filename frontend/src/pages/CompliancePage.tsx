@@ -1,6 +1,6 @@
-import { FileDownIcon } from 'lucide-react';
+import { FileDownIcon, ShieldCheck } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { AppLayout } from '@/components/app-layout';
 import {
   Badge,
   Button,
@@ -43,7 +43,7 @@ const COMPLIANCE_DATA: AlgorithmRow[] = [
 ];
 
 export default function CompliancePage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [exporting, setExporting] = useState(false);
 
   const handleExportPdf = useCallback(async () => {
@@ -65,90 +65,98 @@ export default function CompliancePage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading…</p>
-      </div>
+      <AppLayout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="text-xl font-semibold hover:opacity-90">
-              PQC Shield
-            </Link>
-            <Link to="/compliance" className="text-sm font-medium text-foreground">
-              Compliance
-            </Link>
-            <Link to="/api-keys" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              API Keys
-            </Link>
-            <Link to="/billing" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Billing
-            </Link>
-            <Link to="/cbom" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              CBOM
-            </Link>
+    <AppLayout title="Compliance">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">Compliance Dashboard</h1>
+              <p className="text-muted-foreground">NIST-standardized post-quantum cryptographic algorithms</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={logout}>
-              Sign out
-            </Button>
-          </div>
+          <Button onClick={handleExportPdf} disabled={exporting} className="gap-2">
+            <FileDownIcon className="size-4" />
+            {exporting ? 'Exporting...' : 'Export PDF'}
+          </Button>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-8 space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-semibold">Compliance</h2>
-        <Button onClick={handleExportPdf} disabled={exporting} className="gap-2">
-          <FileDownIcon className="size-4" />
-          {exporting ? 'Exporting…' : 'Export PDF'}
-        </Button>
+        {/* Algorithm Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">NIST-Standardized Algorithms</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Algorithms supported by this app (ML-KEM, ML-DSA, SLH-DSA) with FIPS standards and key sizes.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="font-semibold">Algorithm</TableHead>
+                    <TableHead className="font-semibold">FIPS Standard</TableHead>
+                    <TableHead className="font-semibold">Security Level</TableHead>
+                    <TableHead className="font-semibold">Key Size (pub)</TableHead>
+                    <TableHead className="font-semibold">Key Size (sec)</TableHead>
+                    <TableHead className="font-semibold">Signature/Ciphertext</TableHead>
+                    <TableHead className="font-semibold">Quantum-Safe</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {COMPLIANCE_DATA.map((row) => (
+                    <TableRow key={row.algorithm} className="hover:bg-muted/30">
+                      <TableCell className="font-medium text-foreground">{row.algorithm}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          {row.fips}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="outline" 
+                          className={
+                            row.securityLevel === '5' 
+                              ? 'border-success/50 bg-success/10 text-success' 
+                              : row.securityLevel === '3'
+                              ? 'border-primary/50 bg-primary/10 text-primary'
+                              : 'border-muted-foreground/50'
+                          }
+                        >
+                          Level {row.securityLevel}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground">{row.keySizePub}</TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground">{row.keySizeSec}</TableCell>
+                      <TableCell className="font-mono text-sm text-muted-foreground">{row.sigOrCtSize}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-success/20 text-success hover:bg-success/30 border-0">
+                          Yes
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>NIST-standardized algorithms</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Algorithms supported by this app (ML-KEM, ML-DSA, SLH-DSA) with FIPS standards and key sizes.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Algorithm</TableHead>
-                <TableHead>FIPS standard</TableHead>
-                <TableHead>Security level</TableHead>
-                <TableHead>Key size (pub)</TableHead>
-                <TableHead>Key size (sec)</TableHead>
-                <TableHead>Signature/ciphertext size</TableHead>
-                <TableHead>Quantum-safe</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {COMPLIANCE_DATA.map((row) => (
-                <TableRow key={row.algorithm}>
-                  <TableCell className="font-medium">{row.algorithm}</TableCell>
-                  <TableCell>{row.fips}</TableCell>
-                  <TableCell>{row.securityLevel}</TableCell>
-                  <TableCell>{row.keySizePub}</TableCell>
-                  <TableCell>{row.keySizeSec}</TableCell>
-                  <TableCell>{row.sigOrCtSize}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">Yes</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      </main>
-    </div>
+    </AppLayout>
   );
 }
