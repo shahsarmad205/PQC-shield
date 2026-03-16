@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckIcon, Loader2Icon, PlayIcon } from 'lucide-react';
+import { CheckIcon, FileText, Loader2Icon, PlayIcon } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { AppLayout } from '@/components/app-layout';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import {
   Table,
   TableBody,
@@ -120,7 +120,7 @@ const SAMPLE_PAYLOADS = [
 ];
 
 export default function CBOMPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [scanStep, setScanStep] = useState<string | null>(null);
   const [migrationPlan, setMigrationPlan] = useState<MigrationPlanResult | null>(null);
@@ -188,50 +188,29 @@ export default function CBOMPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading…</p>
-      </div>
+      <AppLayout>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="text-xl font-semibold hover:opacity-90">
-              PQC Shield
-            </Link>
-            <Link to="/compliance" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Compliance
-            </Link>
-            <Link to="/api-keys" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              API Keys
-            </Link>
-            <Link to="/billing" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Billing
-            </Link>
-            <Link to="/audit" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Audit
-            </Link>
-            <Link to="/cbom" className="text-sm font-medium text-foreground">
-              CBOM
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={logout}>
-              Sign out
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">CBOM Security Intelligence</h1>
-            <p className="text-muted-foreground">Cryptographic inventory, threat clock, and migration planning.</p>
+    <AppLayout title="CBOM">
+      <div className="space-y-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <FileText className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">CBOM Security Intelligence</h1>
+              <p className="text-muted-foreground">Cryptographic inventory, threat clock, and migration planning.</p>
+            </div>
           </div>
           <Button
             type="button"
@@ -539,7 +518,7 @@ export default function CBOMPage() {
             </div>
           )}
         </section>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from './components/theme-provider';
 import { AuthProvider, useAuth } from './lib/auth';
 import ApiKeysPage from './pages/ApiKeysPage';
 import AuditPage from './pages/AuditPage';
@@ -87,9 +88,11 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <ThemeProvider defaultTheme="system" storageKey="pqc-shield-theme">
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

@@ -202,7 +202,7 @@ export default function AuditTable() {
           <label className="text-xs font-medium text-muted-foreground">Operation</label>
           <Select
             value={operation || 'all'}
-            onValueChange={(v) => {
+            onValueChange={(v: string) => {
               setOperation(v === 'all' ? '' : v);
               setPage(1);
             }}
