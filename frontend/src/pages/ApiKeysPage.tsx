@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -164,7 +165,7 @@ export default function ApiKeysPage() {
                 Create key
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md" showCloseButton={!createdKey}>
+            <DialogContent className="sm:max-w-md">
               {!createdKey ? (
                 <>
                   <DialogHeader>
@@ -192,7 +193,10 @@ export default function ApiKeysPage() {
                       </p>
                     )}
                   </div>
-                  <DialogFooter showCloseButton>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
                     <Button onClick={handleCreateSubmit} disabled={createSubmitting}>
                       {createSubmitting ? 'Creating...' : 'Create key'}
                     </Button>
@@ -226,7 +230,7 @@ export default function ApiKeysPage() {
                       </Button>
                     </div>
                   </div>
-                  <DialogFooter showCloseButton>
+                  <DialogFooter>
                     <Button onClick={handleCloseAfterCopy}>Done</Button>
                   </DialogFooter>
                 </>
